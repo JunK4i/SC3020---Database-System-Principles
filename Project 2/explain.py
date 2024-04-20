@@ -257,7 +257,7 @@ class Tree(object):
                 return MergeAppendNode(
                     node_json, self.login_details, self.query_details
                 )
-            case "Nested Loop Join":
+            case "Nested Loop":
                 return NestedLoopJoinNode(
                     node_json, self.login_details, self.query_details
                 )
@@ -1613,6 +1613,7 @@ class MaterializeNode(Node):
 class MemoizeNode(Node):
     def define_explanations(self):
         self.str_explain_formula = ""
+        self.str_explain_difference = ""
 
         # explain relation and attributes
         self.append(
@@ -1620,16 +1621,25 @@ class MemoizeNode(Node):
             tgt="Memoize used to cache and reuse results of expensive operations when they are executed with the same parameters multiple times in a query.",
         )
         self.append(
-            src="formula",
+            src="difference",
             tgt="Since the previous query used it, there is no cost involved in fetching it from memory again.",
         )
-        self.str_explain_difference = """Costs of a memoize node dependent also on nature of operations and frequency, cache hit rate and lookup times  """
+
+        self.append(
+            src="difference",
+            tgt="PostgreSQL also accounts for when volume of data to materialize exceeds work_mem and needs to be written to disk(higher cost).",
+        )
 
     def manual_cost(self):
         return 0
 
     def build_parent_dict(self):
-        rel = self.node_json["Relation Name"]
+        key = self.node_json["Output"][0]
+        parts = key.split(".")
+        if len(parts) > 1:
+            # Return the first part as the relation name
+            rel = parts[0]
+
         parent_dict = {
             "Node Type": self.node_json["Node Type"],
             "block_size": self.B(rel, False),
