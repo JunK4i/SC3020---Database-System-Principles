@@ -1152,12 +1152,14 @@ class NestedLoopJoinNode(Node):
 
     def build_parent_dict(self):
 
-        rel = self.node_json["Relation Name"]
-
         parent_dict = {
             "Node Type": self.node_json["Node Type"],
-            "block_size": sqrt(self.node_json["Left block_size"]*self.node_json["Right block_size"]),
-            "tuple_size": sqrt(self.node_json["Left tuple_size"]*self.node_json["Right tuple_size"]),
+            "block_size": sqrt(
+                self.node_json["Left block_size"] * self.node_json["Right block_size"]
+            ),
+            "tuple_size": sqrt(
+                self.node_json["Left tuple_size"] * self.node_json["Right tuple_size"]
+            ),
             "manual_cost": self.manual_cost(),
             "postgre_cost": self.node_json["Total Cost"],
         }
@@ -1200,8 +1202,12 @@ class MergeJoinNode(Node):
 
         parent_dict = {
             "Node Type": self.node_json["Node Type"],
-            "block_size": sqrt(self.node_json["Left block_size"]*self.node_json["Right block_size"]),
-            "tuple_size": sqrt(self.node_json["Left tuple_size"]*self.node_json["Right tuple_size"]),
+            "block_size": sqrt(
+                self.node_json["Left block_size"] * self.node_json["Right block_size"]
+            ),
+            "tuple_size": sqrt(
+                self.node_json["Left tuple_size"] * self.node_json["Right tuple_size"]
+            ),
             "manual_cost": self.manual_cost(),
             "postgre_cost": self.node_json["Total Cost"],
         }
@@ -1296,8 +1302,6 @@ class HashJoinNode(Node):
         return 3 * (R_block_size * S_block_size)
 
     def build_parent_dict(self):
-
-        rel = self.node_json["Relation Name"]
 
         parent_dict = {
             "Node Type": self.node_json["Node Type"],
@@ -1437,7 +1441,7 @@ class SortGroupNodes(Node):
             "manual_cost": self.manual_cost(),
             "postgre_cost": self.node_json["Total Cost"],
         }
- 
+
         return parent_dict
 
 
@@ -1532,7 +1536,7 @@ class LimitNode(Node):
     def manual_cost(self):
         rel = self.node_json["Relation Name"]
         return self.B(rel)
-    
+
     def build_parent_dict(self):
         rel = self.node_json["Relation Name"]
         parent_dict = {
@@ -1542,7 +1546,7 @@ class LimitNode(Node):
             "manual_cost": self.manual_cost(),
             "postgre_cost": self.node_json["Total Cost"],
         }
- 
+
         return parent_dict
 
 
@@ -1569,7 +1573,7 @@ class MaterializeNode(Node):
     def manual_cost(self):
         rel = self.node_json["Relation Name"]
         return self.T(rel) * 2
-    
+
     def build_parent_dict(self):
         rel = self.node_json["Relation Name"]
         parent_dict = {
@@ -1579,8 +1583,9 @@ class MaterializeNode(Node):
             "manual_cost": self.manual_cost(),
             "postgre_cost": self.node_json["Total Cost"],
         }
- 
+
         return parent_dict
+
 
 class MemoizeNode(Node):
     def define_explanations(self):
@@ -1599,7 +1604,7 @@ class MemoizeNode(Node):
 
     def manual_cost(self):
         return 0
-    
+
     def build_parent_dict(self):
         rel = self.node_json["Relation Name"]
         parent_dict = {
@@ -1609,7 +1614,7 @@ class MemoizeNode(Node):
             "manual_cost": self.manual_cost(),
             "postgre_cost": self.node_json["Total Cost"],
         }
- 
+
         return parent_dict
 
 
@@ -1656,7 +1661,7 @@ class AggregateNode(SortGroupNodes):
 
         else:
             return self.T(rel)
-    
+
     def build_parent_dict(self):
         rel = self.node_json["Relation Name"]
         parent_dict = {
@@ -1666,7 +1671,7 @@ class AggregateNode(SortGroupNodes):
             "manual_cost": self.manual_cost(),
             "postgre_cost": self.node_json["Total Cost"],
         }
- 
+
         return parent_dict
 
 
@@ -1676,7 +1681,7 @@ class UniqueNode(Node):
 
     def manual_cost(self):
         return 0
-    
+
     def build_parent_dict(self):
         rel = self.node_json["Relation Name"]
         parent_dict = {
@@ -1686,5 +1691,5 @@ class UniqueNode(Node):
             "manual_cost": self.manual_cost(),
             "postgre_cost": self.node_json["Total Cost"],
         }
- 
+
         return parent_dict
