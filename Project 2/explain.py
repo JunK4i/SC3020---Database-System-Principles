@@ -1689,27 +1689,21 @@ class AggregateNode(SortGroupNodes):
             self.str_explain_difference = """PostgreSQL includes default cost per comparison costs overhead per input tuple.  """
 
     def manual_cost(self):
-        rel = super().extract_relation_name()
-        if (
-            self.node_json["Strategy"] == "Sorted"
-            or self.node_json["Strategy"] == "Mixed"
-        ):
-            numGroupCol = len(self.node_json.get("Group Key", []))
-            return self.T(rel) * numGroupCol
-
-        else:
-            return self.T(rel)
-
+        #child vals, block and tuple
+        R_blockSize = self.node_json["Left block_size"]
+                
+        return (R_blockSize)
+ 
     def build_parent_dict(self):
-        rel = super().extract_relation_name()
+ 
         parent_dict = {
             "Node Type": self.node_json["Node Type"],
-            "block_size": self.B(rel, False),
-            "tuple_size": self.T(rel, False),
+            "block_size": (self.node_json["Left block_size"]),
+            "tuple_size": (self.node_json["Left tuple_size"]),
             "manual_cost": self.manual_cost(),
             "postgre_cost": self.node_json["Total Cost"],
         }
-
+        
         return parent_dict
 
 
