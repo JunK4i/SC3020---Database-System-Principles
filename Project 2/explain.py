@@ -1045,13 +1045,20 @@ class AppendNode(Node):
 
         parent_dict = {
             "Node Type": self.node_json["Node Type"],
-            "block_size": self.node_json["Left block_size"]
-            + self.node_json["Right block_size"],
-            "tuple_size": self.node_json["Left tuple_size"]
-            + self.node_json["Right tuple_size"],
+            "block_size": self.node_json["Left block_size"],
+            "tuple_size": self.node_json["Left tuple_size"],
             "manual_cost": self.manual_cost(),
             "postgre_cost": self.node_json["Total Cost"],
         }
+
+        # Conditional addition of block_size
+        if self.right is not None:
+            parent_dict["block_size"] = (
+                self.node_json["Left block_size"] + self.node_json["Right block_size"]
+            )
+            parent_dict["tuple_size"] = (
+                self.node_json["Left tuple_size"] + self.node_json["Right tuple_size"]
+            )
 
         return parent_dict
 
@@ -1096,13 +1103,20 @@ class MergeAppendNode(Node):
 
         parent_dict = {
             "Node Type": self.node_json["Node Type"],
-            "block_size": self.node_json["Left block_size"]
-            + self.node_json["Right block_size"],
-            "tuple_size": self.node_json["Left tuple_size"]
-            + self.node_json["Right tuple_size"],
+            "block_size": self.node_json["Left block_size"],
+            "tuple_size": self.node_json["Left tuple_size"],
             "manual_cost": self.manual_cost(),
             "postgre_cost": self.node_json["Total Cost"],
         }
+
+        # Conditional addition of block_size
+        if self.right is not None:
+            parent_dict["block_size"] = (
+                self.node_json["Left block_size"] + self.node_json["Right block_size"]
+            )
+            parent_dict["tuple_size"] = (
+                self.node_json["Left tuple_size"] + self.node_json["Right tuple_size"]
+            )
 
         return parent_dict
 
@@ -1347,13 +1361,20 @@ class GatherNode(Node):  # formula unsure
 
         parent_dict = {
             "Node Type": self.node_json["Node Type"],
-            "block_size": self.node_json["Left block_size"]
-            + self.node_json["Right block_size"],
-            "tuple_size": self.node_json["Left tuple_size"]
-            + self.node_json["Right tuple_size"],
+            "block_size": self.node_json["Left block_size"],
+            "tuple_size": self.node_json["Left tuple_size"],
             "manual_cost": self.manual_cost(),
             "postgre_cost": self.node_json["Total Cost"],
         }
+
+        # Conditional addition of block_size
+        if self.right is not None:
+            parent_dict["block_size"] = (
+                self.node_json["Left block_size"] + self.node_json["Right block_size"]
+            )
+            parent_dict["tuple_size"] = (
+                self.node_json["Left tuple_size"] + self.node_json["Right tuple_size"]
+            )
 
         return parent_dict
 
@@ -1398,13 +1419,16 @@ class GatherMergeNode(Node):  # formula unsure
 
         parent_dict = {
             "Node Type": self.node_json["Node Type"],
-            "block_size": self.node_json["Left block_size"]
-            + self.node_json["Right block_size"],
-            "tuple_size": self.node_json["Left tuple_size"]
-            + self.node_json["Right tuple_size"],
+            "block_size": self.node_json["Left block_size"],
+            "tuple_size": self.node_json["Left tuple_size"],
             "manual_cost": self.manual_cost(),
             "postgre_cost": self.node_json["Total Cost"],
         }
+
+        # Conditional addition of block_size
+        if self.right is not None:
+            parent_dict["block_size"] = self.node_json["Left block_size"] + self.node_json["Right block_size"]
+            parent_dict["tuple_size"] = self.node_json["Left tuple_size"] + self.node_json["Right tuple_size"]
 
         return parent_dict
 
