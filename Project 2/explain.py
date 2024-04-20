@@ -170,7 +170,7 @@ class Tree(object):
             plans = node.node_json["Plans"]
             if len(plans) == 1:
                 node.left = self._build_tree_recursive(plans[0], count)
-            elif len(plans) == 2:
+            else:
                 node.left = self._build_tree_recursive(plans[0], count)
                 node.right = self._build_tree_recursive(plans[1], count)
 
