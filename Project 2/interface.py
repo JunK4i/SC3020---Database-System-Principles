@@ -206,6 +206,7 @@ class MainUI(QMainWindow):
         self.tree_widget.setColumnWidth(1,100)
 
         # Append explanations into output field
+        self.query_output.clear()
         explanations = load_qep_explanations(self.qep_tree)
         self.append_query_output(explanations)
         
