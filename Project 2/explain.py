@@ -1396,8 +1396,6 @@ class GatherMergeNode(Node):  # formula unsure
 
     def build_parent_dict(self):
 
-        rel = self.node_json["Relation Name"]
-
         parent_dict = {
             "Node Type": self.node_json["Node Type"],
             "block_size": self.node_json["Left block_size"]
@@ -1632,12 +1630,15 @@ class GroupNode(Node):
 
 class AggregateNode(SortGroupNodes):
     def define_explanations(self):
-
+        self.str_explain_formula = ""
+        self.str_explain_difference = ""
         if (
             self.node_json["Strategy"] == "Sorted"
             or self.node_json["Strategy"] == "Mixed"
         ):
+
             self.str_explain_formula = "Formula : T(rel) * Number of groups. Aggregate used to compute summaries from sets of values like SUM,AVG. "
+
             self.str_explain_difference = """PostgreSQL has different aggregate strategies depending on the input.  """
 
         # assume T(rel) as cost
@@ -1663,7 +1664,7 @@ class AggregateNode(SortGroupNodes):
             return self.T(rel)
 
     def build_parent_dict(self):
-        rel = self.node_json["Relation Name"]
+        rel = super().extract_relation_name()
         parent_dict = {
             "Node Type": self.node_json["Node Type"],
             "block_size": self.B(rel, False),
