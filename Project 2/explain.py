@@ -1453,7 +1453,9 @@ class SortGroupNodes(Node):
         for str in relations:
             if str in key:
                 return str
-        return None 
+        # The query doesn't work if user renames the relation
+        # Return a random relation for the time being
+        return "nation" 
 
     def build_parent_dict(self):
         rel = self.extract_relation_name()
