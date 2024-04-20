@@ -1425,6 +1425,18 @@ class SortGroupNodes(Node):
             # If the key does not contain a dot, return None
             return None
 
+    def build_parent_dict(self):
+        rel = self.extract_relation_name()
+        parent_dict = {
+            "Node Type": self.node_json["Node Type"],
+            "block_size": self.B(rel, False),
+            "tuple_size": self.T(rel, False),
+            "manual_cost": self.manual_cost(),
+            "postgre_cost": self.node_json["Total Cost"],
+        }
+ 
+        return parent_dict
+
 
 class SortNode(SortGroupNodes):
     def define_explanations(self):
@@ -1517,6 +1529,18 @@ class LimitNode(Node):
     def manual_cost(self):
         rel = self.node_json["Relation Name"]
         return self.B(rel)
+    
+    def build_parent_dict(self):
+        rel = self.node_json["Relation Name"]
+        parent_dict = {
+            "Node Type": self.node_json["Node Type"],
+            "block_size": self.B(rel, False),
+            "tuple_size": self.T(rel, False),
+            "manual_cost": self.manual_cost(),
+            "postgre_cost": self.node_json["Total Cost"],
+        }
+ 
+        return parent_dict
 
 
 class MaterializeNode(Node):
@@ -1542,7 +1566,18 @@ class MaterializeNode(Node):
     def manual_cost(self):
         rel = self.node_json["Relation Name"]
         return self.T(rel) * 2
-
+    
+    def build_parent_dict(self):
+        rel = self.node_json["Relation Name"]
+        parent_dict = {
+            "Node Type": self.node_json["Node Type"],
+            "block_size": self.B(rel, False),
+            "tuple_size": self.T(rel, False),
+            "manual_cost": self.manual_cost(),
+            "postgre_cost": self.node_json["Total Cost"],
+        }
+ 
+        return parent_dict
 
 class MemoizeNode(Node):
     def define_explanations(self):
@@ -1561,6 +1596,18 @@ class MemoizeNode(Node):
 
     def manual_cost(self):
         return 0
+    
+    def build_parent_dict(self):
+        rel = self.node_json["Relation Name"]
+        parent_dict = {
+            "Node Type": self.node_json["Node Type"],
+            "block_size": self.B(rel, False),
+            "tuple_size": self.T(rel, False),
+            "manual_cost": self.manual_cost(),
+            "postgre_cost": self.node_json["Total Cost"],
+        }
+ 
+        return parent_dict
 
 
 class GroupNode(Node):
@@ -1606,6 +1653,18 @@ class AggregateNode(SortGroupNodes):
 
         else:
             return self.T(rel)
+    
+    def build_parent_dict(self):
+        rel = self.node_json["Relation Name"]
+        parent_dict = {
+            "Node Type": self.node_json["Node Type"],
+            "block_size": self.B(rel, False),
+            "tuple_size": self.T(rel, False),
+            "manual_cost": self.manual_cost(),
+            "postgre_cost": self.node_json["Total Cost"],
+        }
+ 
+        return parent_dict
 
 
 class UniqueNode(Node):
@@ -1614,3 +1673,15 @@ class UniqueNode(Node):
 
     def manual_cost(self):
         return 0
+    
+    def build_parent_dict(self):
+        rel = self.node_json["Relation Name"]
+        parent_dict = {
+            "Node Type": self.node_json["Node Type"],
+            "block_size": self.B(rel, False),
+            "tuple_size": self.T(rel, False),
+            "manual_cost": self.manual_cost(),
+            "postgre_cost": self.node_json["Total Cost"],
+        }
+ 
+        return parent_dict
