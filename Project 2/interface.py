@@ -195,7 +195,7 @@ class MainUI(QMainWindow):
         query_details.database = database_name
         query_details.query = query
         qep = retrieve_query(self.login_details, query_details)
-        self.query_output.setText(json.dumps(qep[0][0][0], indent=4))
+        # self.query_output.setText(json.dumps(qep[0][0][0], indent=4))
 
         self.qep_tree = initialize_tree(qep[0][0][0]['Plan'], self.login_details, query_details)
 
