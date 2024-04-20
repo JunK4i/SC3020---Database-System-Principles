@@ -1,3 +1,4 @@
+from math import sqrt
 import numpy as np
 import psycopg2
 from typing import TypedDict, List
@@ -1155,8 +1156,8 @@ class NestedLoopJoinNode(Node):
 
         parent_dict = {
             "Node Type": self.node_json["Node Type"],
-            "block_size": self.B(rel, False),
-            "tuple_size": self.T(rel, False),
+            "block_size": sqrt(self.node_json["Left block_size"]*self.node_json["Right block_size"]),
+            "tuple_size": sqrt(self.node_json["Left tuple_size"]*self.node_json["Right tuple_size"]),
             "manual_cost": self.manual_cost(),
             "postgre_cost": self.node_json["Total Cost"],
         }
@@ -1197,12 +1198,10 @@ class MergeJoinNode(Node):
 
     def build_parent_dict(self):
 
-        rel = self.node_json["Relation Name"]
-
         parent_dict = {
             "Node Type": self.node_json["Node Type"],
-            "block_size": self.B(rel, False),
-            "tuple_size": self.T(rel, False),
+            "block_size": sqrt(self.node_json["Left block_size"]*self.node_json["Right block_size"]),
+            "tuple_size": sqrt(self.node_json["Left tuple_size"]*self.node_json["Right tuple_size"]),
             "manual_cost": self.manual_cost(),
             "postgre_cost": self.node_json["Total Cost"],
         }
@@ -1302,8 +1301,12 @@ class HashJoinNode(Node):
 
         parent_dict = {
             "Node Type": self.node_json["Node Type"],
-            "block_size": self.B(rel, False),
-            "tuple_size": self.T(rel, False),
+            "block_size": sqrt(
+                self.node_json["Left block_size"] * self.node_json["Right block_size"]
+            ),
+            "tuple_size": sqrt(
+                self.node_json["Left tuple_size"] * self.node_json["Right tuple_size"]
+            ),
             "manual_cost": self.manual_cost(),
             "postgre_cost": self.node_json["Total Cost"],
         }
