@@ -1446,14 +1446,14 @@ class SortGroupNodes(Node):
         elif "Group Key" in self.node_json:
             key = self.node_json["Group Key"][0]
 
-        # Split the key string by dot (.) to separate the relation name
-        parts = key.split(".")
-        if len(parts) > 1:
-            # Return the first part as the relation name
-            return parts[0]
-        else:
-            # If the key does not contain a dot, return None
-            return None
+        # List of table names for scanning
+        relations = ["customer", "lineitem", "nation", "orders", "part", "partsupp", "region", "supplier"]
+
+        # Return the relation name if it appears in the key
+        for str in relations:
+            if str in key:
+                return str
+        return None 
 
     def build_parent_dict(self):
         rel = self.extract_relation_name()
