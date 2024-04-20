@@ -645,6 +645,7 @@ class ScanNodes(Node):
 
             else:
                 # Case 3: Retrieve one exact record. Selectivity = V(R, a)
+                # Also covers case of string similar to. For eg. %TIN
                 if num_unique == 0:
                     selectivity = 0
                 selectivity = 1 / num_unique
@@ -687,23 +688,23 @@ class ScanNodes(Node):
             filter = self.node_json["Index Cond"]
         else:
             return
-
+        
         # Find the condition within parentheses using split
         conditions = filter.split("AND")
-
+        
         # Extract the specified condition and remove the brackets
         specified_condition = conditions[cond_index].strip().strip("()")
-
-        # Find the index of the comparison operator
-        comparison_operators = ["<", ">", "="]
+        
+        # Find the index of the comparison operator or any irrelevant operators
+        comparison_operators = ["<", ">", "=", "~", ":"]
         index = min(
             specified_condition.find(op)
             for op in comparison_operators
             if op in specified_condition
         )
 
-        # Extract the text before the comparison operator
-        text_before_operator = specified_condition[:index].strip()
+        # Extract the text before the comparison operator and any possible brackets
+        text_before_operator = specified_condition[:index].strip().strip("()")
 
         # Extract the attribute name from the text before the comparison operator
         attr = text_before_operator.split(".")[-1]
@@ -727,7 +728,7 @@ class ScanNodes(Node):
         specified_condition = conditions[cond_index - 1].strip().strip("()")
 
         # Find the index of the comparison operator
-        comparison_operators = ["<", ">", "=", "<=", ">="]
+        comparison_operators = ["<", ">", "=", "<=", ">=", "~"]
         index = min(
             specified_condition.find(op)
             for op in comparison_operators
