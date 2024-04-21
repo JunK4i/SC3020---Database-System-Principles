@@ -764,7 +764,7 @@ class SeqScanNode(ScanNodes):
         self.str_explain_difference = ""
 
         # Explain the relation, attribute
-        rel = self.node_json["Relation Name"]
+        rel = self.node_json["Relation Name"] if "Relation Name" in self.node_json else "nation"
         self.append(src="formula", tgt="Sequential scan on relation '" + rel + "'")
         self.append(src="formula", tgt="Cost Formula: B(" + rel + ")")
 
@@ -779,7 +779,7 @@ class SeqScanNode(ScanNodes):
         )
 
     def manual_cost(self):
-        rel = self.node_json["Relation Name"]
+        rel = self.node_json["Relation Name"] if "Relation Name" in self.node_json else "nation"
         return self.B(rel)
 
     def build_parent_dict(self):
@@ -787,7 +787,7 @@ class SeqScanNode(ScanNodes):
         parent_dict = super().build_parent_dict()
 
         # Except for manual_cost
-        rel = self.node_json["Relation Name"]
+        rel = self.node_json["Relation Name"] if "Relation Name" in self.node_json else "nation"
         parent_dict["manual_cost"] = self.B(rel, False)
 
         return parent_dict
@@ -1555,23 +1555,22 @@ class IncrementalSortNode(SortGroupNodes):
 class LimitNode(Node):
     def define_explanations(self):
         # explain relation and attributes
-        self.str_explain_formula = "Formula : B(rel) * "
-        self.str_explain_difference = """Explain """
-
+        self.str_explain_formula = "Takes some rows and discards remaining ones "
+        self.str_explain_difference = """ PostgreSQL factors cpu overhead and comparison costs  """
+ 
     def manual_cost(self):
-        rel = self.node_json["Relation Name"]
-        return self.B(rel)
-
+        return 0
+ 
     def build_parent_dict(self):
-        rel = self.node_json["Relation Name"]
+        
         parent_dict = {
             "Node Type": self.node_json["Node Type"],
-            "block_size": self.B(rel, False),
-            "tuple_size": self.T(rel, False),
+            "block_size": self.node_json["Left block_size"],
+            "tuple_size": self.node_json["Left tuple_size"],
             "manual_cost": self.manual_cost(),
             "postgre_cost": self.node_json["Total Cost"],
         }
-
+ 
         return parent_dict
 
 
@@ -1581,7 +1580,7 @@ class MaterializeNode(Node):
         self.str_explain_difference = ""
 
         # explain relation and attributes
-        self.append(src="formula", tgt="Materialize Formula : T(rel) * 2")
+        self.append(src="formula", tgt="Materialize Formula : B(rel)")
         self.append(
             src="formula",
             tgt="Materialize is used to store intermediate results temporarily to improve efficiency",
@@ -1596,19 +1595,21 @@ class MaterializeNode(Node):
         )
 
     def manual_cost(self):
-        rel = self.node_json["Relation Name"]
-        return self.T(rel) * 2
-
+        #child vals, block and tuple
+        R_blockSize = self.node_json["Left block_size"]
+                
+        return (R_blockSize)
+ 
     def build_parent_dict(self):
-        rel = self.node_json["Relation Name"]
+ 
         parent_dict = {
             "Node Type": self.node_json["Node Type"],
-            "block_size": self.B(rel, False),
-            "tuple_size": self.T(rel, False),
+            "block_size": (self.node_json["Left block_size"]),
+            "tuple_size": (self.node_json["Left tuple_size"]),
             "manual_cost": self.manual_cost(),
             "postgre_cost": self.node_json["Total Cost"],
         }
-
+        
         return parent_dict
 
 
@@ -1616,7 +1617,7 @@ class MemoizeNode(Node):
     def define_explanations(self):
         self.str_explain_formula = ""
         self.str_explain_difference = ""
-
+ 
         # explain relation and attributes
         self.append(
             src="formula",
@@ -1626,46 +1627,41 @@ class MemoizeNode(Node):
             src="difference",
             tgt="Since the previous query used it, there is no cost involved in fetching it from memory again.",
         )
-
+        
         self.append(
             src="difference",
             tgt="PostgreSQL also accounts for when volume of data to materialize exceeds work_mem and needs to be written to disk(higher cost).",
         )
-
+        
+ 
     def manual_cost(self):
         return 0
-
+        
     def build_parent_dict(self):
-        key = self.node_json["Output"][0]
-        parts = key.split(".")
-        if len(parts) > 1:
-            # Return the first part as the relation name
-            rel = parts[0]
-
+            
         parent_dict = {
             "Node Type": self.node_json["Node Type"],
-            "block_size": self.B(rel, False),
-            "tuple_size": self.T(rel, False),
+            "block_size": (self.node_json["Left block_size"]),
+            "tuple_size": (self.node_json["Left tuple_size"]),
             "manual_cost": self.manual_cost(),
             "postgre_cost": self.node_json["Total Cost"],
         }
-
+ 
         return parent_dict
 
 
-class GroupNode(Node):
+class GroupNode(SortGroupNodes):
     def define_explanations(self):
         self.str_explain_formula = "Formula : T(rel) * Number of Group Columns. "
         self.str_explain_difference = """PostgreSQL includes default cost per comparison costs overhead per input tuple.  """
 
     def manual_cost(self):
-        # test if can
-        rel = self.node_json["Relation Name"]
+        rel = super().extract_relation_name()
         numGroupCol = len(self.node_json.get("Group Key", []))
         return self.T(rel) * numGroupCol
 
 
-class AggregateNode(SortGroupNodes):
+class AggregateNode(Node):
     def define_explanations(self):
         self.str_explain_formula = ""
         self.str_explain_difference = ""
@@ -1709,19 +1705,28 @@ class AggregateNode(SortGroupNodes):
 
 class UniqueNode(Node):
     def define_explanations(self):
-        self.str_explain_formula = "Remove duplicates from sorted set"
-
+        self.str_explain_formula = ""
+        self.str_explain_difference = ""
+ 
+        self.append(
+            src="formula",
+            tgt="Cost Formula: B(rel). Remove duplicates from sorted result set.",
+        )
+ 
+        self.str_explain_difference = """PostgreSQL includes default cost per comparison costs overhead per input tuple, and memory spillage costs. """
+        
+ 
     def manual_cost(self):
-        return 0
-
+        R_blockSize = self.node_json["Left block_size"]
+        return R_blockSize
+ 
     def build_parent_dict(self):
-        rel = self.node_json["Relation Name"]
         parent_dict = {
             "Node Type": self.node_json["Node Type"],
-            "block_size": self.B(rel, False),
-            "tuple_size": self.T(rel, False),
+            "block_size": (self.node_json["Left block_size"]),
+            "tuple_size": (self.node_json["Left tuple_size"]),
             "manual_cost": self.manual_cost(),
             "postgre_cost": self.node_json["Total Cost"],
         }
-
+ 
         return parent_dict
